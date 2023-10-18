@@ -1,0 +1,12 @@
+.cache
+.local
+.lsp-session-v1
+.dir-locals
+.dir-locals.el
+*~
+elpa/
+eshell/
+kkcrc
+tmpRenJVw
+transient/
+url/
