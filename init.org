@@ -48,7 +48,7 @@
      (propertize " " 'display `(raise -0.20))))
 
   (defun delta-mode-line--buffer ()
-    (delta-mode-line--prefix (if (and buffer-file-name (buffer-modified-p)) " 󰾪" " 󰅶")))
+    (delta-mode-line--prefix (if (and buffer-file-name (buffer-modified-p)) " +" " -")))
 
   (defun delta-mode-line--evil-state ()
     (cond ((string= evil-state "insert") " 󰏪")
@@ -65,7 +65,7 @@
 		  '((:eval (delta-mode-line--format
 			    (format-mode-line (list (delta-mode-line--buffer)))
 			    (format-mode-line (list " %b "))
-			    (format-mode-line (list (delta-mode-line--evil-state) "  "))))))
+			    (format-mode-line (list "  "))))))
     (setq-default header-line-format mode-line-format)
     (setq-default mode-line-format '((:eval (make-string (window-total-width) ?━)))))
 
@@ -102,23 +102,22 @@ Ivy will server for good minibuffer completions. Ivy-rich and which-key will all
 
 #+begin_src elisp
 
-  (use-package ivy
-    :diminish
-    :bind (("C-s" . swiper)
-	   :map ivy-minibuffer-map
-	   ("TAB" . ivy-alt-done)
-	   ("C-j" . ivy-next-line)
-	   ("C-k" . ivy-previous-line)))
+    (use-package ivy
+      :diminish
+      :bind (("C-s" . swiper)
+	     :map ivy-minibuffer-map
+	     ("TAB" . ivy-alt-done)))
 
-  (ivy-mode 1)
+    (ivy-mode 1)
 
-  (use-package counsel)
+    (use-package counsel
+      :bind (("M-x" . counsel-M-x)))
 
-  (use-package ivy-rich)
-  (ivy-rich-mode 1)
+    (use-package ivy-rich)
+    (ivy-rich-mode 1)
 
-  (use-package which-key)
-  (which-key-mode)
+    (use-package which-key)
+    (which-key-mode)
 
 #+end_src
 
@@ -130,22 +129,12 @@ Ivy will server for good minibuffer completions. Ivy-rich and which-key will all
   (use-package general
     :ensure t
     :config
-    (general-evil-setup t))
-
-  (general-create-definer lambda/leader-keys
-    :keymaps '(normal insert visual emacs)
-    :prefix "SPC"
-    :global-prefix "C-SPC")
-
-  (use-package general
-    :ensure t
-    :config
-    (general-evil-setup t))
+    (general-evil-setup nil))
 
   (general-create-definer delta/leader-keys
     :keymaps '(normal insert visual emacs)
     :prefix "SPC"
-    :global-prefix "C-SPC")
+    :global-prefix "S-SPC")
 
   (delta/leader-keys
     "SPC" 'counsel-M-x
@@ -171,13 +160,13 @@ Once you try vim-motions, you cannot go back. I am glad [[https://github.com/ema
 
 #+begin_src elisp
 
-  (use-package evil
-    :init
-    (setq evil-want-C-i-jump nil)
-    (setq evil-want-C-u-scroll t)
-    (setq evil-want-integration t)
-    (setq evil-want-keybinding nil)
-    (evil-mode 1))
+  ;; (use-package evil
+  ;;   :init
+  ;;   (setq evil-want-C-i-jump nil)
+  ;;   (setq evil-want-C-u-scroll t)
+  ;;   (setq evil-want-integration t)
+  ;;   (setq evil-want-keybinding nil)
+  ;;   (evil-mode 1))
 
 #+end_src 
 
@@ -200,7 +189,7 @@ Once you try vim-motions, you cannot go back. I am glad [[https://github.com/ema
   (use-package org
     :hook (org-mode . lambda/setup-org)
     :config
-    (setq org-ellipsis " "
+    (setq org-ellipsis " ←"
 	  org-agenda-files '("~/Desktop/agenda/")
 	  org-hide-emphasis-markers t))
 
@@ -273,41 +262,19 @@ Once you try vim-motions, you cannot go back. I am glad [[https://github.com/ema
 
 *** Common Lisp
 
+:NOTE: remember to install src_sh{sbcl} on your respective machine for this to work as intended.
+
 #+begin_src elisp
 
   (setq inferior-lisp-program "/bin/sbcl --noinform")
 
 #+end_src
 
-
-*** Tree directory
-
-#+begin_src elisp
-
-  ;; (use-package treemacs
-  ;; ;
-					  ;   :defer t
-  ;;   :ensure t
-  ;;   :init)
-
-  ;; (use-package treemacs-evil)
-
-  ;; (setq treemacs-user-header-line-format (delta-mode-line--format
-  ;; 					(format-mode-line (delta-mode-line--prefix " 󰅶 "))
-  ;; 					(format-mode-line " treemacs ")
-  ;; 					(format-mode-line "")))
-
-  ;; (setq treemacs-user-mode-line-format '((:eval (make-string (window-total-width) ?━))))
-
-#+end_src 
-
-
 *** Project management 
 
 #+begin_src elisp
 
   (use-package magit)
-
   (use-package projectile)
 
 #+end_src
@@ -342,7 +309,7 @@ Once you try vim-motions, you cannot go back. I am glad [[https://github.com/ema
 		      '(menu-bar-lines . 0)
 		      '(vertical-scroll-bars . nil)
 		      '(internal-border-width . 25)
-		      '(font . "Commit Mono 20"))))
+		      '(font . "BlexMono Nerd Font 18"))))
 
   (setq window-divider-default-right-width 25)
   (setq window-divider-default-places 'right-only)

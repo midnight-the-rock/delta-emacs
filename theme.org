@@ -3,11 +3,24 @@
 #+Author: midnight-the-rock
 #+Property: header-args:elisp :tangle ./delta-theme.el
 
+** Delta Emacs Colorscheme
+
+** Defining pallete 
+
 #+begin_src elisp
 
+  (defgroup delta nil
+    "settings for delta-theme")
+
+  (deftheme delta 
+    "custom colorscheme for Delta Emacs, very low contrast ahead"
+    :background-mode 'dark
+    :kind 'color-scheme
+    :family 'modus)
+
   (setq background     "#1e191e"
-	background-alt "#0f252b"
-	foreground     "#d9d5d5"
+	background-alt "#262026"
+	foreground     "#dbd7d2"
 	color-1        "#aca7a6"
 	color-2        "#efa69b"
 	color-3        "#ebb59f"
@@ -20,13 +33,26 @@
 	color-10       "#d1c9ab"
 	color-11       "#d0bfa9"
 	color-12       "#e2b6c4"
-	color-13       "#e89dba")
+	color-13       "#e89dba"
+	delta-bg       "#1e191e"
+	delta-var      "#c3c8d1"
+	delta-str      "#6f7789"
+	delta-key      "#395a72"
+	delta-fun      "#73626e"
+	delta-type     "#998c9a"
+	delta-cons     "#7c94ac"
+	delta-bg-alt   "#0f252b"
+	delta-modeline  "#3b363b")
 
-  (set-background-color background)
-  (set-foreground-color foreground)
+  (setq delta-font "BlexMono Nerd Font")
 
-  (defgroup delta nil
-    "settings for delta-theme")
+#+end_src
+
+** Defining utility functions and macros
+
+Some utility functions are required, so that I have a better time defining stuff around the colorscheme.
+
+#+begin_src elisp
 
   (defun delta-inherit-face (face style)
     "inherit new style from external face"
@@ -37,66 +63,122 @@
 			:background 'unspecified :foreground 'unspecified
 			:box        'unspecified :inherit    style))
 
-  (defface delta-default-face nil
-    ""
-    :group 'delta)
-  (set-face-attribute 'delta-default-face nil
-		      :background "#1e191e"
-		      :foreground "#dbd7d2")
+  (defmacro delta-defface (face description &rest attributes)
+    `(progn (defface ,face nil ,description :group 'delta)
+	    (set-face-attribute ',face nil
+				:family delta-font
+				:slant      (or ,(plist-get attributes :slant) 'unspecified)
+				:weight     (or ,(plist-get attributes :weight) 'unspecified)
+				:height     (or ,(plist-get attributes :height) 'unspecified)
+				:underline  (or ,(plist-get attributes :underline) 'unspecified)
+				:overline   (or ,(plist-get attributes :overline) 'unspecified)
+				:box        (or ,(plist-get attributes :box) 'unspecified)
+				:inherit    (or ,(plist-get attributes :inherit) 'unspecified)
+				:background (or ,(plist-get attributes :bg) 'unspecified)
+				:foreground (or ,(plist-get attributes :fg) 'unspecified))))				
 
-  (defface delta-default-invert-face '((t (:background "#dbd7d2" :foreground "#1e191e")))
-    "delta's default swapped"
-    :group 'delta)
+  (defmacro delta-font-lock-keyword (mode expr item)
+    `(font-lock-add-keywords ,mode
+			     '((,expr
+				(0 (prog1 () (compose-region (match-beginning 1)
+							     (match-end 1)
+							     ,item)))))))
 
-  (defface delta-background-face '((t (:background "#1e191e" :foreground "#1e191e")))
-    "full background color face (required for space filling sometimes"
-    :group 'delta)
+#+end_src
 
-  (defface delta-selection-face '((t (:background "#1e191e" :foreground "#998c9a")))
-    "face for selection highlight"
-    :group 'delta)
+** Defining the colorscheme
 
-  (defface delta-type-face '((t (:foreground "#eebab2")))
-    "face for data types"
-    :group 'delta)
+#+begin_src elisp
 
-  (defface delta-string-face '((t (:foreground "#0c4f63")))
-    "face for string-like elements of any type"
-    :group 'delta)
+  (delta-defface delta-default-face
+		 "default face"
+		 :fg foreground
+		 :bg background)
 
-  (defface delta-keyword-face '((t (:foreground "#736674")))
-    "face for keywords"
-    :group 'delta)
 
-  (defface delta-user-defined-face '((t (:foreground "#998c9a")))
-    "face for any user defined variable/function"
-    :group 'delta)
+  (delta-defface delta-default-invert-face
+		 "inverted default face"
+		 :fg background
+		 :bg foreground)
 
-  (defface delta-fixed-pitch-face '((t (:font "Iosevka Nerd Font" :height 200)))
-    "face for any user defined variable/function"
-    :group 'delta)
 
-  (defface delta-variable-pitch-face '((t (:font "CommitMono Nerd Font" :height 200)))
-    "face for any user defined variable/function"
-    :group 'delta)
+  (delta-defface delta-background-face
+		 "full background color face (required for space filling sometimes)"
+		 :fg background
+		 :bg background)
 
-  (defface delta-mode-line-face '((t (:foreground "#3b363b" :font "CommitMono Nerd Font 20")))
-    "face for data types"
-    :group 'delta)
+  (delta-defface delta-type-face
+		 "face for data types"
+		 :fg delta-type
+		 :bg background)
 
-  (defface delta-header-line-face '((t (:background "#0F252B" :font "CommitMono Nerd Font 20")))
-    "face for data types"
-    :group 'delta)
+  (delta-defface delta-cons-face
+		 "face for data types"
+		 :fg delta-cons
+		 :bg background)
 
-  (defface delta-tooltip-face '((t (:background "#3b363b" :foreground "#dbd7d2")))
-    "face for data types"
-    :group 'delta)
+  (delta-defface delta-string-face
+		 "face for string-like elements of any type"
+		 :fg delta-str
+		 :bg delta-bg
+		 :slant 'italic)
 
-  (deftheme delta 
-    "custom colorscheme for Delta Emacs, very low contrast ahead"
-    :background-mode 'dark
-    :kind 'color-scheme
-    :family 'modus)
+  (delta-defface delta-keyword-face
+		 "delta keyword face"
+		 :bg delta-bg
+		 :fg delta-key)
+
+  (delta-defface delta-user-defined-face
+		 "face for any user defined variable/function"
+		 :bg delta-bg
+		 :fg delta-var)
+
+  (delta-defface delta-function-face
+		 "face for any user defined variable/function"
+		 :bg delta-bg
+		 :fg delta-fun)
+
+  (delta-defface delta-fixed-pitch-face
+		 "delta fixed pitch face"
+		 :fg foreground
+		 :bg delta-bg
+		 :height 200)
+
+  (delta-defface delta-variable-pitch-face
+		 "delta variable pitch face"
+		 :fg foreground
+		 :bg delta-bg
+		 :height 200)
+
+  (delta-defface delta-mode-line-face
+		 "delta modeline face"
+		 :fg delta-modeline
+		 :height 300)
+
+  (delta-defface delta-header-line-face
+		 "header line custom face"
+		 :fg foreground
+		 :bg delta-bg-alt
+		 :height 200)
+
+  (delta-defface delta-selection-face
+		 "face for selection highlight"
+		 :fg delta-str
+		 :bg delta-bg)
+
+  (delta-defface delta-modeline-face
+		 "tooltip face"
+		 :fg foreground
+		 :bg delta-bg)
+
+#+end_src
+
+** TODO Mapping colorscheme
+
+#+begin_src elisp
+
+  (set-background-color background)
+  (set-foreground-color foreground)
 
   ;; defaults
   (delta-inherit-face 'default                      'delta-default-face)
@@ -115,14 +197,15 @@
   (delta-inherit-face 'window-divider-first-pixel   'delta-background-face)
 
   ;; font lock
+  (delta-inherit-face 'font-lock-constant-face      'delta-cons-face)
   (delta-inherit-face 'font-lock-type-face          'delta-type-face)
   (delta-inherit-face 'font-lock-keyword-face       'delta-keyword-face)
   (delta-inherit-face 'font-lock-string-face        'delta-string-face)
   (delta-inherit-face 'font-lock-comment-face       'delta-string-face)
   (delta-inherit-face 'font-lock-variable-use-face  'delta-user-defined-face)
   (delta-inherit-face 'font-lock-variable-name-face 'delta-user-defined-face)
-  (delta-inherit-face 'font-lock-function-name-face 'delta-user-defined-face)
-  (delta-inherit-face 'font-lock-function-call-face 'delta-user-defined-face)
+  (delta-inherit-face 'font-lock-function-name-face 'delta-function-face)
+  (delta-inherit-face 'font-lock-function-call-face 'delta-function-face)
 
   (set-face-attribute 'font-lock-preprocessor-face nil
 		      :box nil
@@ -138,6 +221,9 @@
   (delta-inherit-face 'cursor 'delta-default-invert-face)
   (delta-inherit-face 'region 'delta-default-invert-face)
 
+  ;; dired
+  (delta-inherit-face 'dired-directory 'delta-tooltip-face)
+
   ;; swiper
   (with-eval-after-load 'swiper
     (delta-inherit-face 'swiper-line-face 'delta-selection-face)
@@ -147,12 +233,11 @@
     (delta-inherit-face 'swiper-match-face-4 'delta-default-invert-face))
 
   ;; ivy
-  (with-eval-after-load 'ivy-mode
-    (delta-inherit-face 'ivy-current-match 'delta-selection-face)
-    (delta-inherit-face 'ivy-minibuffer-match-face-1 'delta-default-invert-face)
-    (delta-inherit-face 'ivy-minibuffer-match-face-2 'delta-default-invert-face)
-    (delta-inherit-face 'ivy-minibuffer-match-face-3 'delta-default-invert-face)
-    (delta-inherit-face 'ivy-minibuffer-match-face-4 'delta-default-invert-face))
+  (delta-inherit-face 'ivy-current-match 'delta-selection-face)
+  (delta-inherit-face 'ivy-minibuffer-match-face-1 'delta-tooltip-face)
+  (delta-inherit-face 'ivy-minibuffer-match-face-2 'delta-tooltip-face)
+  (delta-inherit-face 'ivy-minibuffer-match-face-3 'delta-tooltip-face)
+  (delta-inherit-face 'ivy-minibuffer-match-face-4 'delta-tooltip-face)
 
   ;; company
   (with-eval-after-load 'company-mode
@@ -161,21 +246,20 @@
     (delta-inherit-face 'company-tooltip-selection 'delta-selection-face))
 
   ;; which key
-  (with-eval-after-load 'which-key
-    (set-face-attribute 'which-key-key-face nil
-			:box nil
-			:background (face-background 'default)
-			:foreground "#dbd7d2")
+  (set-face-attribute 'which-key-key-face nil
+		      :box nil
+		      :background (face-background 'default)
+		      :foreground "#dbd7d2")
 
-    (set-face-attribute 'which-key-separator-face nil
-			:box nil
-			:background (face-background 'default)
-			:foreground "#73626e")
+  (set-face-attribute 'which-key-separator-face nil
+		      :box nil
+		      :background (face-background 'default)
+		      :foreground "#73626e")
 
-    (set-face-attribute 'which-key-command-description-face nil
-			:box nil
-			:background (face-background 'default)
-			:foreground "#6f7789"))
+  (set-face-attribute 'which-key-command-description-face nil
+		      :box nil
+		      :background (face-background 'default)
+		      :foreground "#6f7789")
 
   (with-eval-after-load 'treemacs
     (delta-inherit-face 'treemacs-hl-line-face 'delta-selection-face)
@@ -199,13 +283,13 @@
 
   ;; org-mode
   (with-eval-after-load 'org
-    (set-face-attribute 'org-meta-line nil :foreground "#998c9a" :family "CommitMono Nerd Font" :height 180 :weight 'bold) 
+    (set-face-attribute 'org-meta-line nil :foreground "#998c9a" :family "BlexMono Nerd Font" :height 180 :weight 'bold) 
 
-    (set-face-attribute 'org-document-info nil :foreground "#998c9a" :family "CommitMono Nerd Font" :height 180 :weight 'bold) 
+    (set-face-attribute 'org-document-info nil :foreground "#998c9a" :family "BlexMono Nerd Font" :height 180 :weight 'bold) 
 
-    (set-face-attribute 'org-document-title nil :foreground "#998c9a" :family "CommitMono Nerd Font" :height 180 :weight 'bold)
+    (set-face-attribute 'org-document-title nil :foreground "#998c9a" :family "BlexMono Nerd Font" :height 180 :weight 'bold)
 
-    (set-face-attribute 'org-document-info-keyword nil :foreground "#998c9a" :family "CommitMono Nerd Font" :height 180 :weight 'bold) 
+    (set-face-attribute 'org-document-info-keyword nil :foreground "#998c9a" :family "BlexMono Nerd Font" :height 180 :weight 'bold) 
 
     (set-face-attribute 'org-ellipsis nil :underline nil :foreground "#998c9a" :inherit 'variable-pitch) 
 
@@ -216,78 +300,95 @@
     (delta-inherit-face 'org-block    'delta-fixed-pitch-face)
     (delta-inherit-face 'org-verbatim 'delta-fixed-pitch-face)
 
-    (set-face-attribute 'org-block-end-line nil :background "#262026" :foreground "#dbd7d2" :family "Iosevka Nerd Font Bold")
+    (set-face-attribute 'org-block-end-line nil :background "#262026" :foreground "#dbd7d2" :family "BlexMono Nerd Font Bold")
 
-    (set-face-attribute 'org-block-begin-line nil :background "#262026" :foreground "#dbd7d2" :family "Iosevka Nerd Font Bold")
+    (set-face-attribute 'org-block-begin-line nil :background "#262026" :foreground "#dbd7d2" :family "BlexMono Nerd Font Bold")
 
     (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
 
     (set-face-attribute 'org-level-1 nil
-			:font "CommitMono Nerd Font"
+			:font "BlexMono Nerd Font"
 			:weight 'regular
 			:height 3.0
 			:foreground "#947e85")
 
     (set-face-attribute 'org-level-2 nil
-			:font "CommitMono Nerd Font"
+			:font "BlexMono Nerd Font"
 			:weight 'regular
 			:height 2.0
 			:foreground "#947e85")
 
     (set-face-attribute 'org-level-3 nil
-			:font "CommitMono Nerd Font"
+			:font "BlexMono Nerd Font"
 			:weight 'regular
 			:height 1.7
 			:foreground "#947e85")
 
     (set-face-attribute 'org-level-4 nil
-			:font "CommitMono Nerd Font"
+			:font "BlexMono Nerd Font"
 			:weight 'regular
 			:height 1.2
 			:foreground "#947e85")
 
     (set-face-attribute 'org-level-5 nil
-			:font "CommitMono Nerd Font"
+			:font "BlexMono Nerd Font"
 			:weight 'regular
 			:height 1.0
 			:foreground "#947e85")
 
     (set-face-attribute 'org-level-6 nil
-			:font "CommitMono Nerd Font"
+			:font "BlexMono Nerd Font"
 			:weight 'regular
 			:height 1.0
 			:foreground "#947e85")
 
     (set-face-attribute 'org-level-7 nil
-			:font "CommitMono Nerd Font"
+			:font "BlexMono Nerd Font"
 			:weight 'regular
 			:height 1.0
 			:foreground "#947e85")
 
     (set-face-attribute 'org-level-8 nil
-			:font "CommitMono Nerd Font"
+			:font "BlexMono Nerd Font"
 			:weight 'regular
 			:height 1.0
 			:foreground "#947e85")
 
     (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch)))
 
-  (font-lock-add-keywords 'org-mode
-			  '(("^ *\\([-]\\) "
-			     (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+  (delta-font-lock-keyword 'org-mode
+			   "^ *\\([-]\\) "
+			   "•")
 
-  (font-lock-add-keywords 'org-mode
-			  '(("^ *\\(\\#\\+\\)\\w+: "
-			     (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "\u200b")))))) 
+  (delta-font-lock-keyword 'org-mode
+			   "^ *\\(\\#\\+\\)\\w+: "
+			   "\u200b")
 
-  (font-lock-add-keywords 'org-mode
-			  '(("^ *\\(\\#\\+begin_\\|\\#\\+BEGIN_\\|\\#\\+end_\\|\\#\\+END_\\)\\(src\\|SRC\\)"
-			     (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) " "))))))
+  (delta-font-lock-keyword 'org-mode
+			   "^ *\\(\\#\\+begin_\\|\\#\\+BEGIN_\\)\\(quote\\|QUOTE\\)"
+			   " ")
 
-  (font-lock-add-keywords 'org-mode
-			  '(("^ *\\(*\\{1,7\\} \\)"
-			     (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "\u200b"))))))
+  (delta-font-lock-keyword 'org-mode
+			   "^ *\\(\\#\\+end_\\|\\#\\+END_\\)\\(quote\\|QUOTE\\)"
+			   " ")
+
+  (delta-font-lock-keyword 'org-mode
+			   "^ *\\(\\#\\+begin_\\|\\#\\+BEGIN_\\)\\(src\\|SRC\\)"
+			   " ")
+
+  (delta-font-lock-keyword 'org-mode
+			   "^ *\\(\\#\\+end_\\|\\#\\+END_\\)\\(src\\|SRC\\)"
+			   " ")
+
+  (add-to-list 'font-lock-extra-managed-props 'display)
+
+
+  (delta-font-lock-keyword 'org-mode "^ *\\(*\\{1,7\\} \\)" "\u200b")
+
+  (delta-font-lock-keyword 'lisp-mode       "(\\(lambda\\)" "󰘧")
+  (delta-font-lock-keyword 'emacs-lisp-mode "(\\(lambda\\)" "󰘧")
 
   (provide-theme 'delta)
+
 
 #+end_src
